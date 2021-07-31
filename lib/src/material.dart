@@ -44,13 +44,10 @@ Future<Map<String, Material>> loadMtl(String fileName,
     {bool isAsset = true, String? url}) async {
   final materials = Map<String, Material>();
   String data;
+
   try {
     if (url != null) {
-      if (url.endsWith("/") == false) {
-        url = url + "/";
-      }
-      http.Client client = new http.Client();
-      var req = await client.get(Uri.parse(url + fileName));
+      var req = await http.get(Uri.parse(url));
       data = req.body;
     } else if (isAsset) {
       data = await rootBundle.loadString(fileName);
@@ -193,10 +190,7 @@ Future<MapEntry<String, Image>?> loadTexture(
 
   // load image from url
   if (url != null) {
-    if (url.endsWith("/") == false) {
-      url = url + "/";
-    }
-    image = await loadImageFromUrl(url + fileName);
+    image = await loadImageFromUrl(url);
     return MapEntry(fileName, image);
   } else {
     // try to load image from asset in subdirectories

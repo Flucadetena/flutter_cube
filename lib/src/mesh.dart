@@ -67,8 +67,14 @@ class Mesh {
 /// Loading mesh from Wavefront's object file (.obj).
 /// Reference：http://paulbourke.net/dataformats/obj/
 ///
-Future<List<Mesh>> loadObj(String fileName, bool normalized,
-    {bool isAsset = true, String? url}) async {
+Future<List<Mesh>> loadObj(
+  String fileName,
+  bool normalized, {
+  bool isAsset = true,
+  String? url,
+  String? mtlUrl,
+  Map<String, String>? texturesUrl,
+}) async {
   Map<String, Material>? materials;
   List<Vector3> vertices = <Vector3>[];
   List<Offset> texcoords = <Offset>[];
@@ -84,11 +90,8 @@ Future<List<Mesh>> loadObj(String fileName, bool normalized,
 
   var data;
   if (url != null) {
-    if (url.endsWith("/") == false) {
-      url = url + "/";
-    }
     http.Client client = new http.Client();
-    var req = await client.get(Uri.parse(url + fileName));
+    var req = await client.get(Uri.parse(url));
     data = req.body;
   } else if (isAsset) {
     // load obj data from asset.
@@ -111,7 +114,7 @@ Future<List<Mesh>> loadObj(String fileName, bool normalized,
         } else {
           mtlFileName = path.join(basePath, parts[1]);
         }
-        materials = await loadMtl(mtlFileName, isAsset: isAsset, url: url);
+        materials = await loadMtl(mtlFileName, isAsset: isAsset, url: mtlUrl);
         break;
       case 'usemtl':
         // material name from material library. eg: usemtl red
@@ -193,7 +196,7 @@ Future<List<Mesh>> loadObj(String fileName, bool normalized,
     elementOffsets,
     basePath,
     isAsset,
-    url,
+    texturesUrl,
   );
   return normalized ? normalizeMesh(meshes) : meshes;
 }
@@ -210,7 +213,7 @@ Future<List<Mesh>> _buildMesh(
   List<int> elementOffsets,
   String basePath,
   bool isAsset,
-  String? url,
+  Map<String, String>? texturesUrl,
 ) async {
   if (elementOffsets.length == 0) {
     elementNames.add('');
@@ -245,8 +248,11 @@ Future<List<Mesh>> _buildMesh(
     // load texture image from assets.
     final Material? material =
         (materials != null) ? materials[elementMaterials[index]] : null;
+    final texture =
+        (texturesUrl != null) ? texturesUrl[elementMaterials[index]] : null;
+
     final MapEntry<String, Image>? imageEntry =
-        await loadTexture(material, basePath, url: url);
+        await loadTexture(material, basePath, url: texture);
 
     // fix zero texture area
     if (imageEntry != null) {
