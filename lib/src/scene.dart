@@ -48,12 +48,14 @@ class Scene {
     return renderMesh;
   }
 
-  bool _isBackFace(double ax, double ay, double bx, double by, double cx, double cy) {
+  bool _isBackFace(
+      double ax, double ay, double bx, double by, double cx, double cy) {
     double area = (bx - ax) * (cy - ay) - (cx - ax) * (by - ay);
     return area <= 0;
   }
 
-  bool _isClippedFace(double ax, double ay, double az, double bx, double by, double bz, double cx, double cy, double cz) {
+  bool _isClippedFace(double ax, double ay, double az, double bx, double by,
+      double bz, double cx, double cy, double cz) {
     // clip if at least one vertex is outside the near and far plane
     if (az < 0 || az > 1 || bz < 0 || bz > 1 || cz < 0 || cz > 1) return true;
     // clip if the face's bounding box does not intersect the viewport
@@ -87,7 +89,8 @@ class Scene {
     return false;
   }
 
-  void _renderObject(RenderMesh renderMesh, Object o, Matrix4 model, Matrix4 view, Matrix4 projection) {
+  void _renderObject(RenderMesh renderMesh, Object o, Matrix4 model,
+      Matrix4 view, Matrix4 projection) {
     if (!o.visible) return;
     model *= o.transform;
     final Matrix4 transform = projection * view * model;
@@ -141,7 +144,8 @@ class Scene {
       if (!culling || !_isBackFace(ax, ay, bx, by, cx, cy)) {
         if (!_isClippedFace(ax, ay, az, bx, by, bz, cx, cy, cz)) {
           final double sumOfZ = az + bz + cz;
-          renderIndices[indexOffset + i] = Polygon(vertex0, vertex1, vertex2, sumOfZ);
+          renderIndices[indexOffset + i] =
+              Polygon(vertex0, vertex1, vertex2, sumOfZ);
         }
       }
     }
@@ -171,9 +175,12 @@ class Scene {
           b.applyMatrix4(vertexTransform);
           c.applyMatrix4(vertexTransform);
 
-          renderColors[vertexOffset + p.vertex0] = light.shading(viewPosition, a, normal, material).value;
-          renderColors[vertexOffset + p.vertex1] = light.shading(viewPosition, b, normal, material).value;
-          renderColors[vertexOffset + p.vertex2] = light.shading(viewPosition, c, normal, material).value;
+          renderColors[vertexOffset + p.vertex0] =
+              light.shading(viewPosition, a, normal, material).value;
+          renderColors[vertexOffset + p.vertex1] =
+              light.shading(viewPosition, b, normal, material).value;
+          renderColors[vertexOffset + p.vertex2] =
+              light.shading(viewPosition, c, normal, material).value;
         }
       }
     } else {
@@ -182,7 +189,9 @@ class Scene {
       final List<Color> colors = o.mesh.colors;
       final int colorCount = o.mesh.vertices.length;
       if (colorCount != o.mesh.colors.length) {
-        final int colorValue = (o.mesh.texture != null) ? Color.fromARGB(0, 0, 0, 0).value : toColor(o.mesh.material.diffuse, o.mesh.material.opacity).value;
+        final int colorValue = (o.mesh.texture != null)
+            ? Color.fromARGB(0, 0, 0, 0).value
+            : toColor(o.mesh.material.diffuse, o.mesh.material.opacity).value;
         for (int i = 0; i < colorCount; i++) {
           renderColors[vertexOffset + i] = colorValue;
         }
@@ -245,7 +254,8 @@ class Scene {
 
     // create render mesh from objects
     final renderMesh = _makeRenderMesh();
-    _renderObject(renderMesh, world, Matrix4.identity(), camera.lookAtMatrix, camera.projectionMatrix);
+    _renderObject(renderMesh, world, Matrix4.identity(), camera.lookAtMatrix,
+        camera.projectionMatrix);
 
     // remove the culled faces and recreate list.
     final List<Polygon> renderIndices = <Polygon>[];
@@ -282,7 +292,8 @@ class Scene {
     final vertices = Vertices.raw(
       VertexMode.triangles,
       renderMesh.positions,
-      textureCoordinates: renderMesh.texture == null ? null : renderMesh.texcoords,
+      textureCoordinates:
+          renderMesh.texture == null ? null : renderMesh.texcoords,
       colors: renderMesh.colors,
       indices: indices,
     );
@@ -290,7 +301,8 @@ class Scene {
     final paint = Paint();
     if (renderMesh.texture != null) {
       Float64List matrix4 = new Matrix4.identity().storage;
-      final shader = ImageShader(renderMesh.texture!, TileMode.mirror, TileMode.mirror, matrix4);
+      final shader = ImageShader(
+          renderMesh.texture!, TileMode.mirror, TileMode.mirror, matrix4);
       paint.shader = shader;
     }
     paint.blendMode = blendMode;
