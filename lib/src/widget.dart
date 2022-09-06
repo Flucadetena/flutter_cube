@@ -1,4 +1,3 @@
-import 'dart:ui';
 import 'package:flutter/widgets.dart' hide Image;
 import 'package:vector_math/vector_math_64.dart';
 import 'scene.dart';
@@ -50,7 +49,7 @@ class _CubeState extends State<Cube> {
       onObjectCreated: widget.onObjectCreated,
     );
     // prevent setState() or markNeedsBuild called during build
-    WidgetsBinding.instance?.addPostFrameCallback((_) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
       widget.onSceneCreated?.call(scene);
     });
   }

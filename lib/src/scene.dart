@@ -1,17 +1,14 @@
+import 'dart:convert';
 import 'dart:ui';
 import 'dart:typed_data';
+import 'package:flutter/rendering.dart';
 import 'package:flutter_cube/flutter_cube.dart';
-import 'package:vector_math/vector_math_64.dart';
-import 'object.dart';
-import 'camera.dart';
-import 'mesh.dart';
-import 'material.dart';
 import 'light.dart';
 
 typedef ObjectCreatedCallback = void Function(Object object);
 
 class Scene {
-  Scene({VoidCallback? onUpdate, ObjectCreatedCallback? onObjectCreated}) {
+  Scene({Function? onUpdate, ObjectCreatedCallback? onObjectCreated}) {
     this._onUpdate = onUpdate;
     this._onObjectCreated = onObjectCreated;
     world = Object(scene: this);
@@ -23,7 +20,7 @@ class Scene {
   Image? texture;
   BlendMode blendMode = BlendMode.srcOver;
   BlendMode textureBlendMode = BlendMode.srcOver;
-  VoidCallback? _onUpdate;
+  Function? _onUpdate;
   ObjectCreatedCallback? _onObjectCreated;
   int vertexCount = 0;
   int faceCount = 0;
@@ -315,7 +312,12 @@ class Scene {
   }
 
   void update() {
-    if (_onUpdate != null) _onUpdate!();
+    try {
+      if (_onUpdate != null) _onUpdate!();
+    } catch (err) {
+      throw ErrorDescription(
+          'Error updating in the scene.dart file update() method: ${json.decode(err.toString())}');
+    }
   }
 
   void _getAllMesh(List<Mesh> meshes, Object object) {

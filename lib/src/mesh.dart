@@ -77,6 +77,7 @@ Future<List<Mesh>> loadObj(
 }) async {
   Map<String, Material>? materials;
   List<Vector3> vertices = <Vector3>[];
+  List<Vector3> colors = <Vector3>[];
   List<Offset> texcoords = <Offset>[];
   List<Polygon> vertexIndices = <Polygon>[];
   List<Polygon> textureIndices = <Polygon>[];
@@ -141,6 +142,11 @@ Future<List<Mesh>> loadObj(
               double.parse(parts[3]));
           vertices.add(v);
         }
+        if (parts.length == 7) {
+          final c = Vector3(double.parse(parts[4]), double.parse(parts[5]),
+              double.parse(parts[6]));
+          colors.add(c);
+        }
         break;
       case 'vt':
         // eg: vt 0.000000 0.000000
@@ -187,6 +193,7 @@ Future<List<Mesh>> loadObj(
   }
   final meshes = await _buildMesh(
     vertices,
+    colors,
     texcoords,
     vertexIndices,
     textureIndices,
@@ -204,6 +211,7 @@ Future<List<Mesh>> loadObj(
 /// Load the texture image file and rebuild vertices and texcoords to keep the same length.
 Future<List<Mesh>> _buildMesh(
   List<Vector3> vertices,
+  List<Vector3> colors,
   List<Offset> texcoords,
   List<Polygon> vertexIndices,
   List<Polygon> textureIndices,
@@ -250,9 +258,8 @@ Future<List<Mesh>> _buildMesh(
         (materials != null) ? materials[elementMaterials[index]] : null;
     final texture =
         (texturesUrl != null) ? texturesUrl[elementMaterials[index]] : null;
-
     final MapEntry<String, Image>? imageEntry =
-        await loadTexture(material, basePath, url: texture);
+        await loadTexture(material, basePath, url: texture, isAsset: isAsset);
 
     // fix zero texture area
     if (imageEntry != null) {
@@ -269,6 +276,7 @@ Future<List<Mesh>> _buildMesh(
 
     final Mesh mesh = Mesh(
       vertices: newVertices,
+      colors: colors.map((e) => toColor(e)).toList(),
       texcoords: newTexcoords,
       indices: newIndices,
       texture: imageEntry?.value,
